@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html><head><script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script></head>
+<body>
+<button onclick="shareFlex()">Share</button>
+<script>
+liff.init({liffId:"2008621627-1eN2VA2x"});
+async function shareFlex(){
+const flex={type:"flex",altText:"hi",contents:{type:"bubble",hero:{type:"image",url:"https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif",size:"full",aspectRatio:"1:1",aspectMode:"cover",animated:true},body:{type:"box",layout:"vertical",contents:[{type:"text",text":"wow",weight:"bold",size:"xl"}]}}};
+await liff.shareTargetPicker([flex]);
+}
+</script></body></html>
