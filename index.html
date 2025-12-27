@@ -1,11 +1,78 @@
 <!DOCTYPE html>
-<html><head><script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script></head>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LIFF แชร์ Flex GIF</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
 <body>
-<button onclick="shareFlex()">Share</button>
+
+  <div style="text-align:center; margin-top:50px;">
+    <h2>แชร์ GIF ไปให้เพื่อนผ่าน LINE 😎</h2>
+    <button 
+      onclick="shareFlex()" 
+      style="font-size:20px; padding:14px 28px; border:none; border-radius:8px; background:#00B900; color:white; cursor:pointer;">
+      แชร์ให้เพื่อนเลย!
+    </button>
+  </div>
+
 <script>
-liff.init({liffId:"2008621627-1eN2VA2x"});
-async function shareFlex(){
-const flex={type:"flex",altText:"hi",contents:{type:"bubble",hero:{type:"image",url:"https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif",size:"full",aspectRatio:"1:1",aspectMode:"cover",animated:true},body:{type:"box",layout:"vertical",contents:[{type:"text",text":"wow",weight:"bold",size:"xl"}]}}};
-await liff.shareTargetPicker([flex]);
-}
-</script></body></html>
+  liff.init({ liffId: "2008621627-1eN2VA2x" })
+    .then(() => console.log("LIFF เริ่มต้นเรียบร้อย"))
+    .catch(err => console.error("LIFF init ล้มเหลว", err));
+
+  async function shareFlex() {
+    const flexMessage = {
+      type: "flex",
+      altText: "ส่ง Flex GIF ให้เพื่อน!",
+      contents: {
+        type: "bubble",
+        hero: {
+          type: "image",
+          url: "https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif",
+          size: "full",
+          aspectRatio: "1:1",
+          aspectMode: "cover",
+          animated: true
+        },
+        body: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "นี่คือ GIF สุดเจ๋ง! 🎉",
+              weight: "bold",
+              size: "xl",
+              align: "center"
+            },
+            {
+              type: "text",
+              text: "แชร์จาก LIFF",
+              size: "md",
+              color: "#555555",
+              align: "center"
+            }
+          ]
+        }
+      }
+    };
+
+    if (!liff.isInClient()) {
+      alert("⚠ กรุณาเปิดลิงก์นี้ผ่านแอป LINE เท่านั้น");
+      return;
+    }
+
+    try {
+      await liff.shareTargetPicker([flexMessage]);
+      alert("✨ แชร์สำเร็จแล้ว!");
+    } catch (error) {
+      console.error(error);
+      alert("❌ แชร์ล้มเหลว");
+    }
+  }
+</script>
+
+</body>
+</html>
