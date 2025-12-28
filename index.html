@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Flex Generator + Admin + Check UserId</title>
+<title>Flex + Admin + Request</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
-body { font-family: sans-serif; background: #111; color: #fff; text-align: center; padding-top: 40px; }
+body { font-family: sans-serif; background: #111; color: #fff; text-align: center; padding: 30px; }
 input { width: 90%; padding: 12px; border-radius: 6px; border: none; font-size: 16px; margin-top: 10px; }
-button { font-size: 18px; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; margin-top: 14px; }
-.admin-panel { background: rgba(0,0,0,0.6); margin-top: 40px; padding: 20px; border-radius: 10px; white-space: pre-line; }
-#checkResult, #myUserId { margin-top: 10px; font-weight: bold; }
+button { font-size: 18px; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; margin-top: 12px; }
+.admin-panel { background: rgba(0,0,0,0.6); margin-top: 30px; padding: 20px; border-radius: 10px; white-space: pre-line; text-align:left;}
+#logOutput, #myUserId { margin-top: 10px; font-weight: bold; white-space: pre-line; color: #0f0; text-align:left;}
+.request-list { margin-top:10px; text-align:left; }
 </style>
 </head>
 
@@ -21,124 +22,163 @@ button { font-size: 18px; padding: 12px 24px; border: none; border-radius: 6px; 
 <input id="genInput" placeholder="วาง: ImageURL + เว้นวรรค + LINE ID" />
 <button onclick="sendFlex()">สร้างและแชร์ Flex</button>
 
-<h3>ตรวจสอบ UserId</h3>
-<input id="checkUserIdInput" placeholder="ใส่ UserId เพื่อตรวจสอบ" />
-<button onclick="checkUserId()">เช็ค UserId</button>
-<div id="checkResult"></div>
-
 <h3>โชว์ UserId ของตัวเอง</h3>
 <button onclick="showMyUserId()">กดเพื่อดู UserId ของคุณ</button>
 <div id="myUserId"></div>
 
-<button onclick="requestWhitelist()">ขอเพิ่ม Whitelist (แจ้งแอดมิน)</button>
+<h3>ส่งคำขอใช้</h3>
+<input id="reqLineId" placeholder="กรอก LINE ID ของคุณ" />
+<button onclick="sendRequest()">ส่งคำขอใช้</button>
 
 <div class="admin-panel">
   <h3>Admin Panel</h3>
+  
+  <h4>Whitelist</h4>
   <input id="wlName" placeholder="ชื่อผู้ใช้ LINE" />
   <input id="wlUserId" placeholder="userId LINE" />
   <button onclick="addWhitelist()">เพิ่ม Whitelist</button>
   <button onclick="removeWhitelist()">ลบ Whitelist</button>
-
-  <h4>Whitelist ปัจจุบัน</h4>
   <div id="list"></div>
+
+  <h4>รายการคำขอใช้</h4>
+  <div id="requestList" class="request-list"></div>
 </div>
 
+<h3>Log (เฉพาะ admin)</h3>
+<div id="logOutput"></div>
+
 <script>
-const ADMIN = "Ua48c35a3cd7641afee1d85c317032ad5"; // ← ใส่ userId ของคุณ
+const ADMIN = "Uxxxxxxxxxxxxxxxxxxxxxxxx"; // <-- ใส่ userId ของ admin
 let whitelist = JSON.parse(localStorage.getItem("whitelist") || "[]");
+let requests = JSON.parse(localStorage.getItem("requests") || "[]");
 let currentUserId = "";
 
-function renderList() {
-  const view = whitelist.map(w => `👤 ${w.name}\n🆔 ${w.userId}`).join("\n\n");
+// Log
+function log(msg){ document.getElementById("logOutput").innerText += msg + "\n"; }
+function logError(msg){ document.getElementById("logOutput").innerText += "❌ " + msg + "\n"; }
+
+// Render whitelist
+function renderList(){
+  const view = whitelist.map(w=>`👤 ${w.name}\n🆔 ${w.userId}`).join("\n\n");
   document.getElementById("list").innerText = view || "ยังไม่มี whitelist";
 }
 
-function addWhitelist() {
-  if (currentUserId !== ADMIN) return alert("⛔ เฉพาะแอดมินเพิ่มได้");
-  const name = document.getElementById("wlName").value.trim();
-  const userId = document.getElementById("wlUserId").value.trim();
-  if (!name || !userId) return alert("❌ ใส่ชื่อและ userId");
-  whitelist.push({ name, userId });
-  localStorage.setItem("whitelist", JSON.stringify(whitelist));
-  renderList();
-  alert("✅ เพิ่ม whitelist แล้ว");
+// Render request list
+function renderRequests(){
+  if(currentUserId!==ADMIN) return;
+  const view = requests.map((r,i)=>`${i+1}. LINE ID: ${r.lineId}, userId: ${r.userId}  [<button onclick="deleteRequest(${i})">ลบ</button>]`).join("\n");
+  document.getElementById("requestList").innerHTML = view || "ยังไม่มีคำขอ";
 }
 
-function removeWhitelist() {
-  if (currentUserId !== ADMIN) return alert("⛔ เฉพาะแอดมินลบได้");
-  const name = document.getElementById("wlName").value.trim();
-  const userId = document.getElementById("wlUserId").value.trim();
-  whitelist = whitelist.filter(w => !(w.name === name && w.userId === userId));
-  localStorage.setItem("whitelist", JSON.stringify(whitelist));
+// Admin add/remove whitelist
+function addWhitelist(){
+  if(currentUserId!==ADMIN) return alert("⛔ เฉพาะ admin เพิ่มได้");
+  const name=document.getElementById("wlName").value.trim();
+  const userId=document.getElementById("wlUserId").value.trim();
+  if(!name || !userId) return alert("❌ ใส่ชื่อและ userId");
+  whitelist.push({name,userId});
+  localStorage.setItem("whitelist",JSON.stringify(whitelist));
   renderList();
-  alert("🗑 ลบ whitelist แล้ว");
+  log(`✅ เพิ่ม whitelist: ${name} (${userId})`);
+}
+function removeWhitelist(){
+  if(currentUserId!==ADMIN) return alert("⛔ เฉพาะ admin ลบได้");
+  const name=document.getElementById("wlName").value.trim();
+  const userId=document.getElementById("wlUserId").value.trim();
+  whitelist = whitelist.filter(w=>!(w.name===name && w.userId===userId));
+  localStorage.setItem("whitelist",JSON.stringify(whitelist));
+  renderList();
+  log(`🗑 ลบ whitelist: ${name} (${userId})`);
 }
 
-async function sendFlex() {
-  if (!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
-  const profile = await liff.getProfile();
-  currentUserId = profile.userId;
+// Flex
+async function sendFlex(){
+  if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
+  try{
+    const profile=await liff.getProfile();
+    currentUserId = profile.userId;
+    log("UserId ปัจจุบัน: "+currentUserId);
 
-  const isAllowed = whitelist.some(w => w.userId === currentUserId);
-  if (!isAllowed && currentUserId !== ADMIN) return alert("⛔ คุณไม่มีสิทธิ์แชร์ กรุณาติดต่อแอดมิน");
-
-  const raw = document.getElementById("genInput").value.trim();
-  const parts = raw.split(" ");
-  if (parts.length !== 2) return alert("❌ format ผิด");
-
-  const [imageUrl, lineId] = parts;
-
-  const flexMsg = {
-    type: "flex",
-    altText: "Flex Message",
-    contents: {
-      type: "carousel",
-      contents: [
-        {
-          type: "bubble",
-          size: "giga",
-          hero: { type: "image", url: imageUrl, size: "full", aspectRatio: "2:3", aspectMode: "cover", action: { type: "uri", uri: `http://line.me/ti/p/~${lineId}` } },
-          footer: { type: "box", layout: "vertical", spacing: "sm", contents: [ { type: "button", style: "primary", height: "sm", action: { type: "uri", label: "ติดต่อ คลิก!!!", uri: `http://line.me/ti/p/~${lineId}` } } ], backgroundColor: "#000000" }
-        }
-      ]
+    const allowed = whitelist.some(w=>w.userId===currentUserId);
+    if(!allowed && currentUserId!==ADMIN){
+      logError("⛔ คุณไม่มีสิทธิ์แชร์ Flex"); 
+      return alert("⛔ คุณไม่มีสิทธิ์แชร์ กรุณาติดต่อแอดมิน");
     }
-  };
 
-  try { await liff.shareTargetPicker([flexMsg]); alert("✨ แชร์สำเร็จ!"); }
-  catch(e){ alert("❌ แชร์ไม่สำเร็จ"); console.error(e); }
+    const raw=document.getElementById("genInput").value.trim();
+    const parts=raw.split(" ");
+    if(parts.length!==2) return alert("❌ format ผิด");
+    const [imageUrl,lineId]=parts;
+
+    const flexMsg={
+      type:"flex",
+      altText:"Flex Message",
+      contents:{
+        type:"carousel",
+        contents:[{
+          type:"bubble",
+          size:"giga",
+          hero:{type:"image",url:imageUrl,size:"full",aspectRatio:"2:3",aspectMode:"cover",
+          action:{type:"uri",uri:`http://line.me/ti/p/~${lineId}`}},
+          footer:{type:"box",layout:"vertical",spacing:"sm",
+            contents:[{type:"button",style:"primary",height:"sm",action:{type:"uri",label:"ติดต่อ คลิก!!!",uri:`http://line.me/ti/p/~${lineId}`}}],
+            backgroundColor:"#000000"}
+        }]
+      }
+    };
+
+    await liff.shareTargetPicker([flexMsg]);
+    log("✨ แชร์ Flex สำเร็จ!");
+    alert("✨ แชร์ Flex สำเร็จ!");
+  }catch(e){
+    logError("❌ แชร์ Flex ไม่สำเร็จ: "+e);
+  }
 }
 
-function checkUserId() {
-  const checkId = document.getElementById("checkUserIdInput").value.trim();
-  const found = whitelist.find(w => w.userId === checkId);
-  document.getElementById("checkResult").innerText = found ? `✅ มีอยู่ใน whitelist\nชื่อ: ${found.name}` : "❌ ไม่มีใน whitelist";
+// Show userId ของตัวเอง
+async function showMyUserId(){
+  if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
+  try{
+    const profile=await liff.getProfile();
+    currentUserId = profile.userId;
+    document.getElementById("myUserId").innerText=`🆔 UserId ของคุณคือ: ${currentUserId}`;
+    log("โชว์ UserId ของตัวเอง: "+currentUserId);
+  }catch(e){ logError("❌ ไม่สามารถดึง userId: "+e); }
 }
 
-// 🔹 ปุ่มโชว์ userId ของตัวเอง
-async function showMyUserId() {
-  if (!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
-  const profile = await liff.getProfile();
-  currentUserId = profile.userId;
-  document.getElementById("myUserId").innerText = `🆔 UserId ของคุณคือ: ${currentUserId}`;
+// ส่งคำขอ
+async function sendRequest(){
+  if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
+  const lineId=document.getElementById("reqLineId").value.trim();
+  if(!lineId) return alert("❌ กรุณากรอก LINE ID");
+  try{
+    const profile=await liff.getProfile();
+    requests.push({lineId,userId:profile.userId});
+    localStorage.setItem("requests",JSON.stringify(requests));
+    alert("📨 ส่งคำขอเรียบร้อยแล้ว");
+    document.getElementById("reqLineId").value="";
+    renderRequests();
+  }catch(e){ logError("❌ ส่งคำขอไม่สำเร็จ: "+e); }
 }
 
-async function requestWhitelist() {
-  if (!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
-  const profile = await liff.getProfile();
-  currentUserId = profile.userId;
-
-  await fetch("https://YOUR_SERVER_URL/whitelist-request", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(profile)
-  });
-  alert("📨 ส่งคำขอเข้ากลุ่มแอดมินแล้ว!");
+// ลบคำขอตามลำดับ
+function deleteRequest(index){
+  if(currentUserId!==ADMIN) return alert("⛔ เฉพาะ admin ลบได้");
+  const removed=requests.splice(index,1);
+  localStorage.setItem("requests",JSON.stringify(requests));
+  log(`🗑 ลบคำขอ: ${removed[0].lineId} (${removed[0].userId})`);
+  renderRequests();
 }
 
-liff.init({ liffId: "2008621627-1eN2VA2x" }).then(async () => {
-  const profile = await liff.getProfile();
-  currentUserId = profile.userId;
-  renderList();
+// Init LIFF
+liff.init({ liffId: "2008621627-1eN2VA2x" }).then(async ()=>{
+  try{
+    const profile=await liff.getProfile();
+    currentUserId = profile.userId;
+    log("LIFF Init สำเร็จ! UserId: "+currentUserId);
+    renderList();
+    renderRequests();
+  }catch(e){ logError("❌ LIFF Init ไม่สำเร็จ: "+e); }
 });
 </script>
 
