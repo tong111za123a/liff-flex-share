@@ -91,39 +91,59 @@ function removeWhitelist(){
   log(`🗑 ลบ whitelist: ${name} (${userId})`);
 }
 
-// Flex
+// Flex ใหม่
 async function sendFlex(){
   if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
   try{
-    const profile=await liff.getProfile();
+    const profile = await liff.getProfile();
     currentUserId = profile.userId;
     log("UserId ปัจจุบัน: "+currentUserId);
 
-    const allowed = whitelist.some(w=>w.userId===currentUserId);
-    if(!allowed && currentUserId!==ADMIN){
+    const allowed = whitelist.some(w => w.userId === currentUserId);
+    if(!allowed && currentUserId !== ADMIN){
       logError("⛔ คุณไม่มีสิทธิ์แชร์ Flex"); 
       return alert("⛔ คุณไม่มีสิทธิ์แชร์ กรุณาติดต่อแอดมิน");
     }
 
-    const raw=document.getElementById("genInput").value.trim();
-    const parts=raw.split(" ");
-    if(parts.length!==2) return alert("❌ format ผิด");
-    const [imageUrl,lineId]=parts;
+    const raw = document.getElementById("genInput").value.trim();
+    const parts = raw.split(" ");
+    if(parts.length !== 2) return alert("❌ format ผิด");
+    const [imageUrl, lineId] = parts;
 
-    const flexMsg={
-      type:"flex",
-      altText:"Flex Message",
-      contents:{
-        type:"carousel",
-        contents:[{
-          type:"bubble",
-          size:"giga",
-          hero:{type:"image",url:imageUrl,size:"full",aspectRatio:"2:3",aspectMode:"cover",
-          action:{type:"uri",uri:`http://line.me/ti/p/~${lineId}`}},
-          footer:{type:"box",layout:"vertical",spacing:"sm",
-            contents:[{type:"button",style:"primary",height:"sm",action:{type:"uri",label:"ติดต่อ คลิก!!!",uri:`http://line.me/ti/p/~${lineId}`}}],
-            backgroundColor:"#000000"}
-        }]
+    const flexMsg = {
+      type: "flex",
+      altText: "Flex Message",
+      contents: {
+        type: "carousel",
+        contents: [
+          {
+            type: "bubble",
+            size: "giga",
+            body: {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "image",
+                  url: imageUrl,
+                  size: "full",
+                  aspectMode: "cover",
+                  aspectRatio: "2:3",
+                  gravity: "top",
+                  action: {
+                    type: "uri",
+                    label: "action",
+                    uri: `http://line.me/ti/p/~${lineId}`
+                  }
+                }
+              ],
+              paddingAll: "0px",
+              borderWidth: "4px",
+              borderColor: "#000000",
+              cornerRadius: "sm"
+            }
+          }
+        ]
       }
     };
 
