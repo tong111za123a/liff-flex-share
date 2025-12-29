@@ -50,12 +50,22 @@ img.qrcode { width: 200px; margin-top: 10px; border: 2px solid #fff; border-radi
 
 <script>
 const ADMIN = "Ua48c35a3cd7641afee1d85c317032ad5"; // ใส่ userId ของ admin
-let whitelist = JSON.parse(localStorage.getItem("whitelist") || "[]");
+const API_URL = "http://localhost:3000/whitelist"; // เปลี่ยนเป็น URL server จริง
 let currentUserId = "";
+let whitelist = [];
 
 // Log
 function log(msg){ document.getElementById("logOutput").innerText += msg + "\n"; }
 function logError(msg){ document.getElementById("logOutput").innerText += "❌ " + msg + "\n"; }
+
+// Fetch whitelist จาก server
+async function fetchWhitelist(){
+  try{
+    const res = await fetch(API_URL);
+    whitelist = await res.json();
+    renderList();
+  }catch(e){ logError("❌ ไม่สามารถโหลด whitelist: "+e); }
+}
 
 // Render Whitelist
 function renderList(){
@@ -64,25 +74,41 @@ function renderList(){
   document.getElementById("whitelistControls").style.display = (currentUserId === ADMIN) ? "flex" : "none";
 }
 
-// Admin add/remove whitelist
-function addWhitelist(){
+// Admin add/remove whitelist ผ่าน server
+async function addWhitelist(){
   if(currentUserId!==ADMIN) return alert("⛔ เฉพาะ admin เพิ่มได้");
   const name=document.getElementById("wlName").value.trim();
   const userId=document.getElementById("wlUserId").value.trim();
   if(!name || !userId) return alert("❌ ใส่ชื่อและ userId");
-  whitelist.push({name,userId});
-  localStorage.setItem("whitelist",JSON.stringify(whitelist));
-  renderList();
-  log(`✅ เพิ่ม whitelist: ${name} (${userId})`);
+  try{
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({name,userId})
+    });
+    const data = await res.json();
+    if(data.error) return alert(data.error);
+    whitelist = data.list;
+    renderList();
+    log(`✅ เพิ่ม whitelist: ${name} (${userId})`);
+  }catch(e){ logError("❌ เพิ่ม whitelist ไม่สำเร็จ: "+e); }
 }
-function removeWhitelist(){
+
+async function removeWhitelist(){
   if(currentUserId!==ADMIN) return alert("⛔ เฉพาะ admin ลบได้");
-  const name=document.getElementById("wlName").value.trim();
   const userId=document.getElementById("wlUserId").value.trim();
-  whitelist = whitelist.filter(w=>!(w.name===name && w.userId===userId));
-  localStorage.setItem("whitelist",JSON.stringify(whitelist));
-  renderList();
-  log(`🗑 ลบ whitelist: ${name} (${userId})`);
+  if(!userId) return alert("❌ ใส่ userId");
+  try{
+    const res = await fetch(API_URL, {
+      method:"DELETE",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({userId})
+    });
+    const data = await res.json();
+    whitelist = data.list;
+    renderList();
+    log(`🗑 ลบ whitelist: ${userId}`);
+  }catch(e){ logError("❌ ลบ whitelist ไม่สำเร็จ: "+e); }
 }
 
 // Send Flex
@@ -93,8 +119,8 @@ async function sendFlex(){
     currentUserId = profile.userId;
     log("UserId ปัจจุบัน: "+currentUserId);
 
-    // ✅ ตรวจ whitelist + admin
-    const allowed = whitelist.some(w => w.userId === currentUserId) || currentUserId === ADMIN;
+    // ตรวจ whitelist + admin
+    const allowed = (currentUserId === ADMIN) || whitelist.some(w => w.userId === currentUserId);
     if(!allowed){
       logError("⛔ คุณไม่มีสิทธิ์แชร์ Flex"); 
       return alert("⛔ คุณไม่มีสิทธิ์แชร์ กรุณาติดต่อแอดมิน");
@@ -125,11 +151,7 @@ async function sendFlex(){
                   aspectMode: "cover",
                   aspectRatio: "2:3",
                   gravity: "top",
-                  action: {
-                    type: "uri",
-                    label: "action",
-                    uri: `http://line.me/ti/p/~${lineId}`
-                  }
+                  action: { type: "uri", label: "action", uri: `http://line.me/ti/p/~${lineId}` }
                 }
               ],
               paddingAll: "0px",
@@ -145,9 +167,7 @@ async function sendFlex(){
     await liff.shareTargetPicker([flexMsg]);
     log("✨ แชร์ Flex สำเร็จ!");
     alert("✨ แชร์ Flex สำเร็จ!");
-  }catch(e){
-    logError("❌ แชร์ Flex ไม่สำเร็จ: "+e);
-  }
+  }catch(e){ logError("❌ แชร์ Flex ไม่สำเร็จ: "+e); }
 }
 
 // Show UserId
@@ -158,25 +178,15 @@ async function showMyUserId(){
     currentUserId = profile.userId;
     document.getElementById("myUserId").innerText = `🆔 UserId ของคุณคือ: ${currentUserId}`;
     log("โชว์ UserId ของตัวเอง: "+currentUserId);
-    renderList();
+    await fetchWhitelist();
   }catch(e){ logError("❌ ไม่สามารถดึง userId: "+e); }
 }
 
 // แอดไลน์แอดมิน
-function addMeLine(){
-  window.open("http://line.me/ti/p/~mc357.com", "_blank");
-}
+function addMeLine(){ window.open("http://line.me/ti/p/~mc357.com","_blank"); }
 
 // Init LIFF
-liff.init({ liffId: "2008621627-1eN2VA2x" }).then(async ()=>{
-  try{
-    const profile = await liff.getProfile();
-    currentUserId = profile.userId;
-    log("LIFF Init สำเร็จ! UserId: "+currentUserId);
-    renderList();
-  }catch(e){ logError("❌ LIFF Init ไม่สำเร็จ: "+e); }
-});
+liff.init({ liffId: "2008621627-1eN2VA2x" }).then(showMyUserId);
 </script>
-
 </body>
 </html>
