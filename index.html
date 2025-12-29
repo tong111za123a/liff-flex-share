@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flex + Admin + Request</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
@@ -20,7 +20,7 @@ button { font-size: 16px; padding: 10px 20px; border: none; border-radius: 6px; 
 <body>
 
 <h2>Flex Generator</h2>
-<input id="genInput" placeholder="วาง: ImageURL + เว้นวรรค + LINE ID ของคนอื่น" />
+<input id="genInput" placeholder="วาง: ImageURL + เว้นวรรค + LINE ID ของคนอื่น">
 <button onclick="sendFlex()">สร้างและแชร์ Flex</button>
 
 <h3>โชว์ UserId ของตัวเอง</h3>
@@ -29,7 +29,7 @@ button { font-size: 16px; padding: 10px 20px; border: none; border-radius: 6px; 
 
 <h3>ส่งคำขอใช้</h3>
 <div class="flex-row">
-  <input id="reqLineId" placeholder="กรอก LINE ID ของคุณ" />
+  <input id="reqLineId" placeholder="กรอก LINE ID ของคุณ">
   <button onclick="sendRequest()">ส่งคำขอใช้</button>
 </div>
 
@@ -38,8 +38,8 @@ button { font-size: 16px; padding: 10px 20px; border: none; border-radius: 6px; 
   
   <h4>Whitelist</h4>
   <div class="flex-row" id="whitelistControls" style="display:none;">
-    <input id="wlName" placeholder="ชื่อผู้ใช้ LINE" />
-    <input id="wlUserId" placeholder="userId ของ LIFF" />
+    <input id="wlName" placeholder="ชื่อผู้ใช้ LINE">
+    <input id="wlUserId" placeholder="userId ของ LIFF">
     <button onclick="addWhitelist()">เพิ่ม</button>
     <button onclick="removeWhitelist()">ลบ</button>
   </div>
@@ -130,7 +130,7 @@ async function sendFlex(){
     }
 
     const raw = document.getElementById("genInput").value.trim();
-    const parts = raw.split(/ (.+)/); // แยกเป็น 2 ส่วน
+    const parts = raw.split(/ (.+)/);
     if(parts.length !== 2) return alert("❌ format ผิด");
     const [imageUrl, lineId] = parts;
 
@@ -187,6 +187,8 @@ async function showMyUserId(){
     currentUserId = profile.userId;
     document.getElementById("myUserId").innerText=`🆔 UserId ของคุณคือ: ${currentUserId}`;
     log("โชว์ UserId ของตัวเอง: "+currentUserId);
+    renderList();
+    renderRequests(); // render ใหม่หลังได้ currentUserId
   }catch(e){ logError("❌ ไม่สามารถดึง userId: "+e); }
 }
 
@@ -201,7 +203,7 @@ async function sendRequest(){
     localStorage.setItem("requests",JSON.stringify(requests));
     alert("📨 ส่งคำขอเรียบร้อยแล้ว");
     document.getElementById("reqLineId").value="";
-    renderRequests();
+    renderRequests(); // render ให้ admin เห็นทันที
   }catch(e){ logError("❌ ส่งคำขอไม่สำเร็จ: "+e); }
 }
 
@@ -217,11 +219,11 @@ function deleteRequest(index){
 // Init LIFF
 liff.init({ liffId: "2008621627-1eN2VA2x" }).then(async ()=>{
   try{
-    const profile=await liff.getProfile();
+    const profile = await liff.getProfile();
     currentUserId = profile.userId;
     log("LIFF Init สำเร็จ! UserId: "+currentUserId);
     renderList();
-    renderRequests();
+    renderRequests(); // render ให้ admin เห็นทันที
   }catch(e){ logError("❌ LIFF Init ไม่สำเร็จ: "+e); }
 });
 </script>
