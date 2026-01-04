@@ -23,27 +23,36 @@ body {
   backdrop-filter:brightness(0.6);
 }
 
+/* ทำให้ UI เล็กลง */
+.panel {
+  width:92%;
+  max-width:360px;
+  background:rgba(0,0,0,0.75);
+  padding:12px 15px;
+  border-radius:10px;
+  margin-top:15px;
+  font-size:14px;
+}
+
 input {
-  width:90%;
-  padding:14px;
-  border-radius:6px;
+  width:95%;
+  padding:10px;
+  border-radius:5px;
   border:none;
-  font-size:16px;
-  margin-top:10px;
+  font-size:14px;
+  margin-top:6px;
   background:#222;
   color:#fff;
 }
 
 button {
-  font-size:18px;
-  padding:12px 24px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  margin-top:12px;
+  font-size:15px;
+  padding:8px 18px;
+  border-radius:5px;
+  border:1px solid #0ff;
   background:#000;
   color:#0ff;
-  border:1px solid #0ff;
+  margin-top:10px;
 }
 
 button:hover {
@@ -51,64 +60,65 @@ button:hover {
   color:#000;
 }
 
-.panel {
-  width:95%;
-  background:rgba(0,0,0,0.7);
-  padding:15px;
-  border-radius:12px;
-  margin-top:20px;
-  text-align:left;
-  white-space:pre-line;
-}
-
-.qr { margin-top:25px; text-align:center; }
-.qr img { border-radius:10px; border:2px solid #0ff; }
-.qr p { color:#0ff; font-weight:bold; }
+.qr { margin-top:20px; }
+.qr img { width:150px; border-radius:8px; border:2px solid #0ff; }
+.qr p { font-size:13px; color:#0ff; font-weight:bold; }
+#myUserId { margin-top:8px; font-size:13px; color:#0f0; font-weight:bold; }
 #noAccessPanel { display:none; }
 </style>
 </head>
 
 <body>
 
-<h2 id="greeting">สวัสดีคุณ...</h2>
+<h3 id="greeting" style="margin-top:15px;">สวัสดีคุณ...</h3>
 
 <div class="panel" style="text-align:center;">
-  <h3 style="color:#0ff;">👑 ติดต่อผู้สร้างระบบ</h3>
   <button onclick="contactCreator()">➕ เพิ่มเพื่อนผู้สร้าง (mc357.com)</button>
 </div>
 
 <div class="panel">
-  <h3>✨ Flex Generator</h3>
-  <input id="genInput" placeholder="วางลิงก์รูป + เว้นวรรค + LINE ID (เช่น https://xxx.jpg mc357.com)" />
-  <button onclick="sendFlex()">สร้างและแชร์ Flex</button>
+  <input id="genInput" placeholder="ImageURL + เว้นวรรค + LINE ID" />
+  <button onclick="sendFlex()">แชร์ Flex</button>
+</div>
+
+<div class="panel">
+  <button onclick="checkUserId()">🔍 Check UserId</button>
+  <div id="myUserId"></div>
 </div>
 
 <div class="panel" id="noAccessPanel">
-  <h3>⛔ คุณไม่มีสิทธิ์ใช้งาน Flex</h3>
-  <button onclick="contactCreator()">➕ ติดต่อแอดมิน (เพิ่มเพื่อน LINE)</button>
+  <h4>⛔ ไม่มีสิทธิ์แชร์ Flex</h4>
+  <button onclick="contactCreator()">➕ ติดต่อแอดมิน</button>
 </div>
 
 <div class="qr">
-  <h3>📱 แสกนเพื่อติดต่อผู้สร้าง</h3>
-  <img src="https://img5.pic.in.th/file/secure-sv1/IMG_12468d6ce5b9565e3489.jpeg" width="200px"/>
-  <p>แสกนเพื่อติดต่อผู้สร้าง</p>
+  <img src="https://img5.pic.in.th/file/secure-sv1/IMG_12468d6ce5b9565e3489.jpeg"/>
+  <p>แสกนติดต่อผู้สร้าง</p>
 </div>
 
 <script>
 const ADMIN = "Ua48c35a3cd7641afee1d85c317032ad5";
 
-// Whitelist (ระบบจะใช้ userId ภายใน ไม่แสดงบนหน้าเว็บ)
+// whitelist (ใส่สำคัญเท่านั้น)
 let whitelist = [
-  { name:"ผู้สร้างระบบ (Admin)", userId:ADMIN },
-  { name:"DemoUser", userId:"U111111111111111111111111111111" },
-  { name:"User3", userId:"U333333333333333333333333333333" }
+  {name:"ผู้สร้างระบบ", userId:ADMIN},
+  {name:"DemoUser", userId:"U111111111111111111111111111111"},
+  {name:"User3", userId:"U333333333333333333333333333333"}
 ];
 
 let currentUserId = "";
 
-// แชร์ Flex
+// ปุ่มกดเช็ค userId
+async function checkUserId(){
+  if(!liff.isLoggedIn()) liff.login();
+  const profile = await liff.getProfile();
+  currentUserId = profile.userId;
+  document.getElementById("myUserId").innerText = `"${profile.displayName}","${currentUserId}"`;
+}
+
+// ส่ง Flex
 async function sendFlex(){
-  if(!liff.isInClient()) return alert("⚠ กรุณาเปิดผ่าน LINE");
+  if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
   try{
     const profile = await liff.getProfile();
     currentUserId = profile.userId;
@@ -121,10 +131,9 @@ async function sendFlex(){
 
     const raw = document.getElementById("genInput").value.trim();
     const parts = raw.split(" ");
-    if(parts.length < 2) return alert("❌ รูปแบบไม่ถูกต้อง");
+    if(parts.length < 2) return alert("❌ format ผิด");
 
-    const imageUrl = parts[0];
-    const lineId = parts[1];
+    const [imageUrl, lineId] = parts;
 
     const flexMsg = {
       "type": "flex",
@@ -143,11 +152,6 @@ async function sendFlex(){
               "aspectRatio": "2:3",
               "gravity": "top"
             },
-            "body": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": []
-            },
             "action": {
               "type": "uri",
               "uri": "https://line.me/ti/p/~" + lineId
@@ -164,12 +168,12 @@ async function sendFlex(){
   }
 }
 
-// ปุ่มติดต่อผู้สร้าง
+// ติดต่อผู้สร้าง
 function contactCreator(){
   window.location.href = "http://line.me/ti/p/~mc357.com";
 }
 
-// LIFF init + ตั้งคำทักทาย
+// LIFF init + ทักชื่อ
 liff.init({ liffId: "2008621627-1eN2VA2x" }).then(async ()=>{
   if(!liff.isLoggedIn()) liff.login();
   const profile = await liff.getProfile();
