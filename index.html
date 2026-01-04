@@ -22,64 +22,44 @@ body {
   backdrop-filter: brightness(0.5);
   overflow:auto;
 }
-
-h2 { font-size:20px; margin-top:12px; }
-
 .panel {
-  width: 85%;
-  background: rgba(0,0,0,0.7);
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 12px;
-  text-align: left;
-}
-
-.panel h3 { font-size:16px; margin-bottom:6px; }
-
-input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #0ff;
-  font-size: 14px;
-  margin-top: 5px;
-  background: #000;
-  color: #0ff;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 5px;
-  border: 1px solid #0ff;
-  background: #000;
-  color: #0ff;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #0ff;
-  color: #000;
-}
-
-#myUserId, #logOutput {
-  font-size:13px;
   width:85%;
-  background:rgba(0,0,0,0.6);
-  padding:10px;
-  border-radius:6px;
-  margin-top:10px;
-  color:#0f0;
+  background:rgba(0,0,0,0.7);
+  padding:12px;
+  border-radius:8px;
+  margin-top:12px;
   text-align:left;
-  word-break:break-all;
 }
-
-.qr { margin-top:25px; }
-.qr h3 { font-size:15px; }
-.qr img { width:150px; border-radius:8px; border:2px solid #0ff; }
-.qr p { font-size:13px; color:#0ff; font-weight:bold; margin-top:6px; }
+input {
+  width:100%;
+  padding:10px;
+  border-radius:5px;
+  border:1px solid #0ff;
+  font-size:14px;
+  margin-top:5px;
+  background:#000;
+  color:#0ff;
+}
+button {
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:5px;
+  border:1px solid #0ff;
+  background:#000;
+  color:#0ff;
+  font-size:15px;
+  cursor:pointer;
+}
+button:hover { background:#0ff; color:#000; }
+#myUserId,#logOutput{
+  font-size:13px;width:85%;background:rgba(0,0,0,0.6);
+  padding:10px;border-radius:6px;margin-top:10px;
+  color:#0f0;text-align:left;word-break:break-all;
+}
+.qr{margin-top:25px;text-align:center;}
+.qr img{width:150px;border-radius:8px;border:2px solid #0ff;}
+.qr p{font-size:13px;color:#0ff;font-weight:bold;margin-top:6px;}
 </style>
 </head>
 
@@ -105,8 +85,8 @@ button:hover {
 <div class="panel">
   <h3>🛡 ผู้มีสิทธิ์ใช้งาน</h3>
   <p>"HELLO","Ua48c35a3cd7641afee1d85c317032ad5"</p>
-  <p>"ชื่อระบบ1","UDEMO1xxxxxxxxxxxxxxxxxxxxxxxx"</p>
-  <p>"ผู้ใช้2","UDEMO2xxxxxxxxxxxxxxxxxxxxxxxx"</p>
+  <p>"ชื่อระบบ1","UDEMOxxxxxxxxxxxxxxxxxxxxxxxx"</p>
+  <p>"ผู้ใช้3","UUSER3xxxxxxxxxxxxxxxxxxxxxx"</p>
 </div>
 
 <div class="qr">
@@ -115,14 +95,15 @@ button:hover {
   <p>แสกนเพื่อติดต่อ ID: mc357.com</p>
 </div>
 
+<h3 style="font-size:15px;margin-top:20px;">📌 Log (Admin)</h3>
 <div id="logOutput"></div>
 
 <script>
 const ADMIN = "Ua48c35a3cd7641afee1d85c317032ad5";
 const whitelist = [
-  "Ua48c35a3cd7641afee1d85c317032ad5", // Admin
-  "UDEMO1xxxxxxxxxxxxxxxxxxxxxxxx",
-  "UDEMO2xxxxxxxxxxxxxxxxxxxxxxxx"
+  "Ua48c35a3cd7641afee1d85c317032ad5",
+  "UDEMOxxxxxxxxxxxxxxxxxxxxxxxx",
+  "UUSER3xxxxxxxxxxxxxxxxxxxxxx"
 ];
 
 let currentUserId = "";
@@ -145,7 +126,7 @@ async function sendFlex(){
     const lineId = document.getElementById("lineId").value.trim();
     if(!imageUrl || !lineId) return alert("❌ ใส่ข้อมูลให้ครบ");
 
-    const flexMsg = {
+    const flexTemplate = {
       "type": "flex",
       "altText": "FLEX ฟรี สนใจติดต่อ ID: mc357.com",
       "contents": {
@@ -154,39 +135,40 @@ async function sendFlex(){
           {
             "type": "bubble",
             "size": "giga",
-            "body": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": [
-                {
-                  "type": "image",
-                  "url": imageUrl,
-                  "size": "full",
-                  "aspectMode": "cover",
-                  "aspectRatio": "2:3",
-                  "gravity": "top"
-                }
-              ],
-              "paddingAll": "0px",
-              "borderWidth": "4px",
-              "borderColor": "#000000"
+            "hero": {
+              "type": "image",
+              "url": imageUrl,
+              "size": "full",
+              "aspectMode": "cover",
+              "aspectRatio": "2:3",
+              "gravity": "top"
+            },
+            "body": { "type": "box", "layout": "vertical", "contents": [] },
+            "styles": {
+              "body": {
+                "paddingAll": "0px",
+                "borderWidth": "4px",
+                "borderColor": "#000000"
+              }
+            },
+            "action": {
+              "type": "uri",
+              "uri": "https://line.me/ti/p/~" + lineId
             }
           }
         ]
       }
     };
 
-    await liff.shareTargetPicker([flexMsg]);
+    await liff.shareTargetPicker([flexTemplate]);
     log("✨ แชร์ Flex สำเร็จ!");
     alert("✨ แชร์ Flex สำเร็จ!");
-  }catch(e){
-    logError("error: "+e);
-  }
+  }catch(e){ logError("error: "+e); }
 }
 
 async function showMyUserId(){
   const p = await liff.getProfile();
-  document.getElementById("myUserId").innerText = "UserId: " + p.userId;
+  document.getElementById("myUserId").innerText = p.userId;
 }
 
 function contactCreator(){
