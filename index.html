@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LIFF Flex Generator</title>
+<title>Flex + Admin + Request</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
@@ -67,11 +67,16 @@ button:hover {
   color: #fff;
 }
 
-#myUserId {
+#logOutput, #myUserId {
   margin-top: 10px;
   font-weight: bold;
+  white-space: pre-line;
   color: #0f0;
-  font-size: 14px;
+  text-align: left;
+  width: 90%;
+  background: rgba(0,0,0,0.6);
+  padding: 15px;
+  border-radius: 8px;
   word-break: break-all;
 }
 
@@ -100,32 +105,23 @@ button:hover {
 
 <div class="panel">
   <h3>✨ Flex Generator</h3>
-  <input id="imageUrl" placeholder="วางลิงก์รูปภาพที่นี่" />
-  <input id="lineId" placeholder="ใส่ LINE ID ที่นี่ (เช่น mc357.com)" />
+  <input id="genInput" placeholder="วาง: ImageURL + เว้นวรรค + LINE ID" />
   <button onclick="sendFlex()">สร้างและแชร์ Flex</button>
 </div>
 
 <div class="panel">
   <h3>🔍 ตรวจสอบ UserId ของคุณ</h3>
-  <button onclick="showMyUserId()">กดเพื่อดู UserId</button>
+  <button onclick="showMyUserId()">กดเพื่อดู UserId ของคุณ</button>
   <div id="myUserId"></div>
 </div>
 
-<button onclick="contactCreator()">📩 ติดต่อผู้สร้าง</button>
-
-<div class="panel" id="noAccessPanel" style="display:none; border:1px solid red; background:rgba(255,0,0,0.2);">
-  <h3 style="color:red;">⛔ คุณไม่มีสิทธิ์ส่ง Flex</h3>
-  <button onclick="goAddFriend()" style="color:#fff; border-color:#fff;">➕ ติดต่อแอดมิน (เพิ่มเพื่อน LINE)</button>
-</div>
-
 <div class="panel">
-  <h3>🛡 UserId ที่มีสิทธิ์ใช้งานระบบ</h3>
-  <p>"Admin","Ua48c35a3cd7641afee1d85c317032ad5"</p>
-  <p>"ระบบ1","U0000000000000000000000000000000"</p>
-  <p>"ชื่อจำลอง","U9999999999999999999999999999999"</p>
-  <p>📌 วิธีเพิ่ม UserId คนที่ 3:</p>
-  <p>"ชื่อระบบ1","useridจำลองของคุณ"</p>
+  <h3>📨 ส่งคำขอใช้งานระบบ</h3>
+  <input id="reqLineId" placeholder="กรอก LINE ID ของคุณ" />
+  <button onclick="sendRequest()">ส่งคำขอ</button>
 </div>
+
+<button onclick="contactCreator()">📩 ติดต่อผู้สร้าง</button>
 
 <div class="qr">
   <h3>📱 แสกนเพื่อติดต่อผู้สร้าง</h3>
@@ -133,106 +129,107 @@ button:hover {
   <p>แสกนเพื่อติดต่อผู้สร้าง</p>
 </div>
 
+<h3>📌 Log (เฉพาะ admin)</h3>
+<div id="logOutput"></div>
+
+<div class="panel">
+  <h3>🛡 Whitelist (กำหนดสิทธิ์ใช้ Flex)</h3>
+  <p>"Admin","Ua48c35a3cd7641afee1d85c317032ad5"</p>
+  <p>"User1","U0000000000000000000000000000000"</p>
+  <p>"User2","U9999999999999999999999999999999"</p>
+  <p>➕ วิธีเพิ่มคนที่ 3: แก้ในโค้ดตรง whitelist</p>
+</div>
+
 <script>
-// ตั้งค่า UserId ที่มีสิทธิ์
 const ADMIN = "Ua48c35a3cd7641afee1d85c317032ad5";
 const whitelist = [
   "Ua48c35a3cd7641afee1d85c317032ad5", // Admin
-  "U0000000000000000000000000000000",   // ระบบ1
-  "U9999999999999999999999999999999"    // จำลอง
+  "U0000000000000000000000000000000",   // User1
+  "U9999999999999999999999999999999",   // User2
+  "U12345678901234567890123456789012"   // User3 จำลอง (คุณแก้เองได้)
 ];
 
+let requests = JSON.parse(localStorage.getItem("requests") || "[]");
 let currentUserId = "";
 
-// ฟังก์ชันสร้างและแชร์ Flex
-async function sendFlex(){
-  if(!liff.isInClient()) return alert("⚠ กรุณาเปิดผ่านแอป LINE");
-  if(!liff.isLoggedIn()) return liff.login();
+function log(msg){ document.getElementById("logOutput").innerText += msg + "\n"; }
+function logError(msg){ document.getElementById("logOutput").innerText += "❌ " + msg + "\n"; }
 
+async function sendFlex(){
+  if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
   try{
     const profile = await liff.getProfile();
     currentUserId = profile.userId;
+    log("UserId: " + currentUserId);
 
     if(!whitelist.includes(currentUserId)){
-      document.getElementById("noAccessPanel").style.display = "block";
-      return alert("⛔ UserId นี้ไม่มีสิทธิ์ส่ง Flex");
+      logError("⛔ ไม่มีสิทธิ์แชร์ Flex");
+      return alert("⛔ คุณไม่มีสิทธิ์แชร์ Flex");
     }
 
-    const imageUrl = document.getElementById("imageUrl").value.trim();
-    const lineId = document.getElementById("lineId").value.trim();
-    if(!imageUrl || !lineId) return alert("❌ กรุณากรอกข้อมูลให้ครบ");
+    const raw=document.getElementById("genInput").value.trim();
+    const parts=raw.split(" ");
+    if(parts.length!==2) return alert("❌ format ผิด");
+    const [imageUrl,lineId]=parts;
 
-    const flexMsg = {
-      type: "flex",
-      altText: "FLEX ฟรี สนใจติดต่อ ID: mc357.com",
-      contents: {
-        type: "carousel",
-        contents: [
-          {
-            type: "bubble",
-            size: "giga",
-            hero: {
-              type: "image",
-              url: imageUrl,
-              size: "full",
-              aspectRatio: "2:3",
-              aspectMode: "cover",
-              action: { type: "uri", uri: "https://line.me/ti/p/~" + lineId }
-            },
-            body: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                { type: "text", text: "FLEX ฟรี", weight: "bold", size: "xl", color: "#0ff" },
-                { type: "text", text: "สนใจติดต่อ ID: mc357.com", size: "md", margin: "md", color: "#fff" }
-              ]
-            },
-            footer: {
-              type: "box",
-              layout: "vertical",
-              contents: [
-                { type: "button", style: "primary", label: "ติดต่อผู้สร้าง", action: { type: "uri", uri: "https://line.me/ti/p/~mc357.com" } }
-              ],
-              backgroundColor: "#000"
-            }
-          }
-        ]
+    const flexMsg={
+      type:"flex",
+      altText:"FLEX ฟรี สนใจติดต่อ ID: mc357.com",
+      contents:{
+        type:"carousel",
+        contents:[{
+          type:"bubble",
+          size:"giga",
+          hero:{type:"image",url:imageUrl,size:"full",aspectRatio:"2:3",aspectMode:"cover",
+          action:{type:"uri",uri:`http://line.me/ti/p/~${lineId}`}},
+          footer:{type:"box",layout:"vertical",spacing:"sm",
+            contents:[{type:"button",style:"primary",height:"sm",action:{type:"uri",label:"ติดต่อผู้สร้าง",uri:`http://line.me/ti/p/~${lineId}`}}],
+            backgroundColor:"#000000"}
+        }]
       }
     };
 
     await liff.shareTargetPicker([flexMsg]);
-    alert("✨ ส่ง Flex สำเร็จ!");
+    log("✨ แชร์ Flex สำเร็จ!");
+    alert("✨ แชร์ Flex สำเร็จ!");
   }catch(e){
-    alert("❌ เกิดข้อผิดพลาด: " + e);
+    logError("แชร์ Flex error: "+e);
   }
 }
 
-// ฟังก์ชันแสดง UserId ของตัวเอง
 async function showMyUserId(){
-  if(!liff.isLoggedIn()) await liff.login();
-  const profile = await liff.getProfile();
-  document.getElementById("myUserId").innerText = profile.userId;
+  try{
+    const profile = await liff.getProfile();
+    document.getElementById("myUserId").innerText="🆔 "+profile.userId;
+  }catch(e){ alert("error"); }
 }
 
-// ปุ่มติดต่อผู้สร้าง
+async function sendRequest(){
+  try{
+    const profile = await liff.getProfile();
+    const lineId=document.getElementById("reqLineId").value.trim();
+    if(!lineId) return alert("❌ ใส่ LINE ID");
+    requests.push({lineId,userId:profile.userId});
+    localStorage.setItem("requests",JSON.stringify(requests));
+    if(currentUserId===ADMIN) renderRequests();
+    alert("📨 ส่งคำขอแล้ว");
+  }catch(e){ alert("error"); }
+}
+
+function renderRequests(){
+  if(currentUserId!==ADMIN) return;
+  const view = requests.map((r,i)=>`${i+1}. ${r.lineId} (${r.userId})`).join("\n");
+  document.getElementById("logOutput").innerText += "\n📨 Requests:\n"+view;
+}
+
 function contactCreator(){
-  window.location.href = "https://line.me/ti/p/~mc357.com";
+  window.location.href="https://line.me/ti/p/~mc357.com";
 }
 
-// ปุ่มเพิ่มเพื่อน admin
-function goAddFriend(){
-  window.location.href = "https://line.me/ti/p/~mc357.com";
-}
-function goAddFriend(){
-  window.location.href = "https://line.me/ti/p/~mc357.com";
-}
-
-// Init LIFF และแสดงชื่อผู้ใช้
 liff.init({ liffId: "2008621627-1eN2VA2x" }).then(async ()=>{
-  if(!liff.isLoggedIn()) await liff.login();
-  const profile = await liff.getProfile();
-  currentUserId = profile.userId;
-  document.getElementById("greeting").innerText = "สวัสดีคุณ " + profile.displayName;
+  const p=await liff.getProfile();
+  document.getElementById("greeting").innerText="สวัสดีคุณ "+p.displayName;
+  currentUserId=p.userId;
 });
 </script>
 
