@@ -73,11 +73,11 @@ button:hover {
 <h3 id="greeting" style="margin-top:15px;">สวัสดีคุณ...</h3>
 
 <div class="panel" style="text-align:center;">
-  <button onclick="contactCreator()">➕ เพิ่มเพื่อนผู้สร้าง (mc357.com)</button>
+  <button onclick="contactCreator()">➕ติดต่อผู้สร้างระบบ (คลิก!)</button>
 </div>
 
 <div class="panel">
-  <input id="genInput" placeholder="ImageURL + เว้นวรรค + LINE ID" />
+  <input id="genInput" placeholder="ImageURL + LINE ID" />
   <button onclick="sendFlex()">แชร์ Flex</button>
 </div>
 
@@ -88,7 +88,7 @@ button:hover {
 
 <div class="panel" id="noAccessPanel">
   <h4>⛔ ไม่มีสิทธิ์แชร์ Flex</h4>
-  <button onclick="contactCreator()">➕ ติดต่อแอดมิน</button>
+  <button onclick="contactCreator()">➕ ติดต่อแอด (คลิก!)</button>
 </div>
 
 <div class="qr">
@@ -102,8 +102,8 @@ const ADMIN = "Ua48c35a3cd7641afee1d85c317032ad5";
 // whitelist (ใส่สำคัญเท่านั้น)
 let whitelist = [
   {name:"ผู้สร้างระบบ", userId:ADMIN},
-  {name:"DemoUser", userId:"U111111111111111111111111111111"},
-  {name:"User3", userId:"U333333333333333333333333333333"}
+  {name:"บัญชีเทสระบบ", userId:"U9b6952e52b4a9a683471ae688bf30b80"},
+  {name:"ให้ทดลองใช้ P", userId:"Uffa99b9ba90b2d097eb5300c6a521560"}
 ];
 
 let currentUserId = "";
