@@ -3,63 +3,69 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Flex Generator</title>
+<title>LIFF Flex System</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
 body {
   font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
+  margin:0;
+  padding:0;
+  height:100vh;
   background: url('https://img2.pic.in.th/IMG_1247.gif') no-repeat center center fixed;
   background-size: cover;
-  color: #fff;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  backdrop-filter: brightness(0.5);
+  color:#fff;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
   overflow:auto;
+  backdrop-filter:brightness(0.6);
 }
-.panel {
-  width:85%;
-  background:rgba(0,0,0,0.7);
-  padding:12px;
-  border-radius:8px;
-  margin-top:12px;
-  text-align:left;
-}
+
 input {
-  width:100%;
-  padding:10px;
-  border-radius:5px;
-  border:1px solid #0ff;
-  font-size:14px;
-  margin-top:5px;
-  background:#000;
-  color:#0ff;
-}
-button {
-  width:100%;
-  padding:10px;
+  width:90%;
+  padding:14px;
+  border-radius:6px;
+  border:none;
+  font-size:16px;
   margin-top:10px;
-  border-radius:5px;
-  border:1px solid #0ff;
+  background:#222;
+  color:#fff;
+}
+
+button {
+  font-size:18px;
+  padding:12px 24px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  margin-top:12px;
   background:#000;
   color:#0ff;
-  font-size:15px;
-  cursor:pointer;
+  border:1px solid #0ff;
 }
-button:hover { background:#0ff; color:#000; }
-#myUserId,#logOutput{
-  font-size:13px;width:85%;background:rgba(0,0,0,0.6);
-  padding:10px;border-radius:6px;margin-top:10px;
-  color:#0f0;text-align:left;word-break:break-all;
+
+button:hover {
+  background:#0ff;
+  color:#000;
 }
-.qr{margin-top:25px;text-align:center;}
-.qr img{width:150px;border-radius:8px;border:2px solid #0ff;}
-.qr p{font-size:13px;color:#0ff;font-weight:bold;margin-top:6px;}
+
+.panel {
+  width:95%;
+  background:rgba(0,0,0,0.7);
+  padding:15px;
+  border-radius:12px;
+  margin-top:20px;
+  text-align:left;
+  white-space:pre-line;
+}
+
+.qr { margin-top:25px; }
+.qr img { border-radius:10px; border:2px solid #0ff; }
+.qr p { color:#0ff; font-weight:bold; }
+#logOutput, #myUserId { margin-top:10px; font-weight:bold; white-space:pre-line; color:#0f0; text-align:left; width:95%; }
+#noAccessPanel { display:none; }
 </style>
 </head>
 
@@ -68,65 +74,92 @@ button:hover { background:#0ff; color:#000; }
 <h2 id="greeting">สวัสดีคุณ...</h2>
 
 <div class="panel">
-  <h3>✨ Flex Generator</h3>
+  <h3>✨ สร้างและแชร์ Flex</h3>
   <input id="imageUrl" placeholder="วางลิงก์รูปภาพที่นี่" />
   <input id="lineId" placeholder="ใส่ LINE ID ที่นี่ (เช่น mc357.com)" />
-  <button onclick="sendFlex()">แชร์ Flex</button>
+  <button onclick="sendFlex()">สร้างและแชร์ Flex</button>
 </div>
 
 <div class="panel">
-  <h3>🔍 เช็ค UserId</h3>
-  <button onclick="showMyUserId()">ดู UserId</button>
+  <h3>🔍 ตรวจสอบ UserId ของคุณ</h3>
+  <button onclick="showMyUserId()">กดเพื่อดู UserId</button>
   <div id="myUserId"></div>
 </div>
 
 <button onclick="contactCreator()">📩 ติดต่อผู้สร้าง</button>
 
 <div class="panel">
-  <h3>🛡 ผู้มีสิทธิ์ใช้งาน</h3>
-  <p>"HELLO","Ua48c35a3cd7641afee1d85c317032ad5"</p>
-  <p>"ชื่อระบบ1","UDEMOxxxxxxxxxxxxxxxxxxxxxxxx"</p>
-  <p>"ผู้ใช้3","UUSER3xxxxxxxxxxxxxxxxxxxxxx"</p>
+  <h3>🛡 ผู้ที่มีสิทธิ์ใช้งานระบบ</h3>
+  <p>เฉพาะ userId ที่ถูกเพิ่มในระบบเท่านั้นจึงจะใช้ฟังก์ชัน Flex ได้</p>
+
+  <h4>👑 Admin</h4>
+  "ชื่อระบบ1","Ua48c35a3cd7641afee1d85c317032ad5"
+
+  <h4>👤 User 1</h4>
+  "DemoUser","U111111111111111111111111111111"
+
+  <h4>👤 User 2</h4>
+  "UserMock","U222222222222222222222222222222"
 </div>
+
+<div class="panel" id="noAccessPanel">
+  <h3>⛔ คุณไม่มีสิทธิ์ใช้งาน Flex</h3>
+  <button onclick="goAddFriend()">➕ ติดต่อแอดมิน (เพิ่มเพื่อน LINE)</button>
+</div>
+
+<h3>📌 Log ระบบ (admin only)</h3>
+<div id="logOutput"></div>
 
 <div class="qr">
-  <h3>📱 Scan ติดต่อผู้สร้าง</h3>
-  <img src="https://img5.pic.in.th/file/secure-sv1/IMG_12468d6ce5b9565e3489.jpeg"/>
-  <p>แสกนเพื่อติดต่อ ID: mc357.com</p>
+  <h3>📱 แสกนเพื่อติดต่อผู้สร้าง</h3>
+  <img src="https://img5.pic.in.th/file/secure-sv1/IMG_12468d6ce5b9565e3489.jpeg" width="200px"/>
+  <p>แสกนเพื่อติดต่อผู้สร้าง</p>
 </div>
-
-<h3 style="font-size:15px;margin-top:20px;">📌 Log (Admin)</h3>
-<div id="logOutput"></div>
 
 <script>
 const ADMIN = "Ua48c35a3cd7641afee1d85c317032ad5";
-const whitelist = [
-  "Ua48c35a3cd7641afee1d85c317032ad5",
-  "UDEMOxxxxxxxxxxxxxxxxxxxxxxxx",
-  "UUSER3xxxxxxxxxxxxxxxxxxxxxx"
+
+// whitelist ใส่เฉพาะตัวสำคัญ
+let whitelist = [
+  ADMIN,
+  "U111111111111111111111111111111",
+  "U222222222222222222222222222222"
 ];
 
 let currentUserId = "";
 
-function log(msg){ document.getElementById("logOutput").innerText += msg + "\n"; }
-function logError(msg){ document.getElementById("logOutput").innerText += "❌ " + msg + "\n"; }
+// log แสดงเฉพาะ admin
+function log(msg){
+  if(currentUserId === ADMIN){
+    document.getElementById("logOutput").innerText += msg + "\n";
+  }
+}
+function logError(msg){
+  if(currentUserId === ADMIN){
+    document.getElementById("logOutput").innerText += "❌ " + msg + "\n";
+  }
+}
 
+// Flex Message
 async function sendFlex(){
   if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
-  try{
+
+  try {
     const profile = await liff.getProfile();
     currentUserId = profile.userId;
 
-    if(!whitelist.includes(currentUserId)){
-      logError("⛔ ไม่มีสิทธิ์แชร์ Flex");
+    const allowed = whitelist.includes(currentUserId);
+    if(!allowed){
+      document.getElementById("noAccessPanel").style.display="block";
+      logError("User ไม่มีสิทธิ์แชร์ Flex");
       return alert("⛔ คุณไม่มีสิทธิ์แชร์ Flex");
     }
 
     const imageUrl = document.getElementById("imageUrl").value.trim();
     const lineId = document.getElementById("lineId").value.trim();
-    if(!imageUrl || !lineId) return alert("❌ ใส่ข้อมูลให้ครบ");
+    if(!imageUrl || !lineId) return alert("❌ กรุณาใส่ข้อมูลให้ครบ");
 
-    const flexTemplate = {
+    const flexMsg = {
       "type": "flex",
       "altText": "FLEX ฟรี สนใจติดต่อ ID: mc357.com",
       "contents": {
@@ -143,42 +176,75 @@ async function sendFlex(){
               "aspectRatio": "2:3",
               "gravity": "top"
             },
-            "body": { "type": "box", "layout": "vertical", "contents": [] },
+            "body": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": []
+            },
+            "action": {
+              "type": "uri",
+              "uri": "https://line.me/ti/p/~" + lineId
+            },
             "styles": {
               "body": {
                 "paddingAll": "0px",
                 "borderWidth": "4px",
                 "borderColor": "#000000"
               }
-            },
-            "action": {
-              "type": "uri",
-              "uri": "https://line.me/ti/p/~" + lineId
             }
           }
         ]
       }
     };
 
-    await liff.shareTargetPicker([flexTemplate]);
+    await liff.shareTargetPicker([flexMsg]);
     log("✨ แชร์ Flex สำเร็จ!");
     alert("✨ แชร์ Flex สำเร็จ!");
-  }catch(e){ logError("error: "+e); }
+
+  } catch (error) {
+    logError("แชร์ Flex error: " + error);
+    alert("❌ ส่ง Flex ไม่สำเร็จ");
+  }
 }
 
+// Show userId
 async function showMyUserId(){
-  const p = await liff.getProfile();
-  document.getElementById("myUserId").innerText = p.userId;
+  if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
+  try{
+    const profile = await liff.getProfile();
+    currentUserId = profile.userId;
+    document.getElementById("myUserId").innerText = "🆔 " + currentUserId;
+    log("admin check userId: " + currentUserId);
+  }catch(e){ logError("ดึง userId error"); }
 }
 
+// Contact creator
 function contactCreator(){
-  window.location.href="https://line.me/ti/p/~mc357.com";
+  window.location.href = "https://line.me/ti/p/~mc357.com";
 }
 
+// Add friend if no access
+function goAddFriend(){
+  window.location.href = "https://line.me/ti/p/~mc357.com";
+}
+
+// Add friend admin
+function goAddFriend(){
+  window.location.href = "https://line.me/ti/p/~mc357.com";
+}
+
+// LIFF init
 liff.init({ liffId: "2008621627-1eN2VA2x" }).then(async ()=>{
-  const p = await liff.getProfile();
-  document.getElementById("greeting").innerText = "สวัสดีคุณ " + p.displayName;
-  currentUserId = p.userId;
+  try{
+    const profile = await liff.getProfile();
+    currentUserId = profile.userId;
+    document.getElementById("greeting").innerText = "สวัสดีคุณ " + profile.displayName;
+    log("LIFF Init userId: " + currentUserId);
+
+    if(!whitelist.includes(currentUserId)){
+      document.getElementById("noAccessPanel").style.display="block";
+    }
+  }catch(e){ logError("LIFF Init error"); }
 });
 </script>
 
