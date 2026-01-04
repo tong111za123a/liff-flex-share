@@ -61,10 +61,9 @@ button:hover {
   white-space:pre-line;
 }
 
-.qr { margin-top:25px; }
+.qr { margin-top:25px; text-align:center; }
 .qr img { border-radius:10px; border:2px solid #0ff; }
 .qr p { color:#0ff; font-weight:bold; }
-#logOutput, #myUserId { margin-top:10px; font-weight:bold; white-space:pre-line; color:#0f0; text-align:left; width:95%; }
 #noAccessPanel { display:none; }
 </style>
 </head>
@@ -73,42 +72,21 @@ button:hover {
 
 <h2 id="greeting">สวัสดีคุณ...</h2>
 
+<div class="panel" style="text-align:center;">
+  <h3 style="color:#0ff;">👑 ติดต่อผู้สร้างระบบ</h3>
+  <button onclick="contactCreator()">➕ เพิ่มเพื่อนผู้สร้าง (mc357.com)</button>
+</div>
+
 <div class="panel">
-  <h3>✨ สร้างและแชร์ Flex</h3>
-  <input id="imageUrl" placeholder="วางลิงก์รูปภาพที่นี่" />
-  <input id="lineId" placeholder="ใส่ LINE ID ที่นี่ (เช่น mc357.com)" />
+  <h3>✨ Flex Generator</h3>
+  <input id="genInput" placeholder="วางลิงก์รูป + เว้นวรรค + LINE ID (เช่น https://xxx.jpg mc357.com)" />
   <button onclick="sendFlex()">สร้างและแชร์ Flex</button>
-</div>
-
-<div class="panel">
-  <h3>🔍 ตรวจสอบ UserId ของคุณ</h3>
-  <button onclick="showMyUserId()">กดเพื่อดู UserId</button>
-  <div id="myUserId"></div>
-</div>
-
-<button onclick="contactCreator()">📩 ติดต่อผู้สร้าง</button>
-
-<div class="panel">
-  <h3>🛡 ผู้ที่มีสิทธิ์ใช้งานระบบ</h3>
-  <p>เฉพาะ userId ที่ถูกเพิ่มในระบบเท่านั้นจึงจะใช้ฟังก์ชัน Flex ได้</p>
-
-  <h4>👑 Admin</h4>
-  "ชื่อระบบ1","Ua48c35a3cd7641afee1d85c317032ad5"
-
-  <h4>👤 User 1</h4>
-  "DemoUser","U111111111111111111111111111111"
-
-  <h4>👤 User 2</h4>
-  "UserMock","U222222222222222222222222222222"
 </div>
 
 <div class="panel" id="noAccessPanel">
   <h3>⛔ คุณไม่มีสิทธิ์ใช้งาน Flex</h3>
-  <button onclick="goAddFriend()">➕ ติดต่อแอดมิน (เพิ่มเพื่อน LINE)</button>
+  <button onclick="contactCreator()">➕ ติดต่อแอดมิน (เพิ่มเพื่อน LINE)</button>
 </div>
-
-<h3>📌 Log ระบบ (admin only)</h3>
-<div id="logOutput"></div>
 
 <div class="qr">
   <h3>📱 แสกนเพื่อติดต่อผู้สร้าง</h3>
@@ -119,45 +97,34 @@ button:hover {
 <script>
 const ADMIN = "Ua48c35a3cd7641afee1d85c317032ad5";
 
-// whitelist ใส่เฉพาะตัวสำคัญ
+// Whitelist (ระบบจะใช้ userId ภายใน ไม่แสดงบนหน้าเว็บ)
 let whitelist = [
-  ADMIN,
-  "U111111111111111111111111111111",
-  "U222222222222222222222222222222"
+  { name:"ผู้สร้างระบบ (Admin)", userId:ADMIN },
+  { name:"DemoUser", userId:"U111111111111111111111111111111" },
+  { name:"User3", userId:"U333333333333333333333333333333" }
 ];
 
 let currentUserId = "";
 
-// log แสดงเฉพาะ admin
-function log(msg){
-  if(currentUserId === ADMIN){
-    document.getElementById("logOutput").innerText += msg + "\n";
-  }
-}
-function logError(msg){
-  if(currentUserId === ADMIN){
-    document.getElementById("logOutput").innerText += "❌ " + msg + "\n";
-  }
-}
-
-// Flex Message
+// แชร์ Flex
 async function sendFlex(){
-  if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
-
-  try {
+  if(!liff.isInClient()) return alert("⚠ กรุณาเปิดผ่าน LINE");
+  try{
     const profile = await liff.getProfile();
     currentUserId = profile.userId;
 
-    const allowed = whitelist.includes(currentUserId);
+    const allowed = whitelist.some(w => w.userId === currentUserId);
     if(!allowed){
       document.getElementById("noAccessPanel").style.display="block";
-      logError("User ไม่มีสิทธิ์แชร์ Flex");
       return alert("⛔ คุณไม่มีสิทธิ์แชร์ Flex");
     }
 
-    const imageUrl = document.getElementById("imageUrl").value.trim();
-    const lineId = document.getElementById("lineId").value.trim();
-    if(!imageUrl || !lineId) return alert("❌ กรุณาใส่ข้อมูลให้ครบ");
+    const raw = document.getElementById("genInput").value.trim();
+    const parts = raw.split(" ");
+    if(parts.length < 2) return alert("❌ รูปแบบไม่ถูกต้อง");
+
+    const imageUrl = parts[0];
+    const lineId = parts[1];
 
     const flexMsg = {
       "type": "flex",
@@ -184,13 +151,6 @@ async function sendFlex(){
             "action": {
               "type": "uri",
               "uri": "https://line.me/ti/p/~" + lineId
-            },
-            "styles": {
-              "body": {
-                "paddingAll": "0px",
-                "borderWidth": "4px",
-                "borderColor": "#000000"
-              }
             }
           }
         ]
@@ -198,53 +158,22 @@ async function sendFlex(){
     };
 
     await liff.shareTargetPicker([flexMsg]);
-    log("✨ แชร์ Flex สำเร็จ!");
     alert("✨ แชร์ Flex สำเร็จ!");
-
-  } catch (error) {
-    logError("แชร์ Flex error: " + error);
-    alert("❌ ส่ง Flex ไม่สำเร็จ");
+  }catch(e){
+    alert("❌ Flex error: " + e);
   }
 }
 
-// Show userId
-async function showMyUserId(){
-  if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
-  try{
-    const profile = await liff.getProfile();
-    currentUserId = profile.userId;
-    document.getElementById("myUserId").innerText = "🆔 " + currentUserId;
-    log("admin check userId: " + currentUserId);
-  }catch(e){ logError("ดึง userId error"); }
-}
-
-// Contact creator
+// ปุ่มติดต่อผู้สร้าง
 function contactCreator(){
-  window.location.href = "https://line.me/ti/p/~mc357.com";
+  window.location.href = "http://line.me/ti/p/~mc357.com";
 }
 
-// Add friend if no access
-function goAddFriend(){
-  window.location.href = "https://line.me/ti/p/~mc357.com";
-}
-
-// Add friend admin
-function goAddFriend(){
-  window.location.href = "https://line.me/ti/p/~mc357.com";
-}
-
-// LIFF init
+// LIFF init + ตั้งคำทักทาย
 liff.init({ liffId: "2008621627-1eN2VA2x" }).then(async ()=>{
-  try{
-    const profile = await liff.getProfile();
-    currentUserId = profile.userId;
-    document.getElementById("greeting").innerText = "สวัสดีคุณ " + profile.displayName;
-    log("LIFF Init userId: " + currentUserId);
-
-    if(!whitelist.includes(currentUserId)){
-      document.getElementById("noAccessPanel").style.display="block";
-    }
-  }catch(e){ logError("LIFF Init error"); }
+  if(!liff.isLoggedIn()) liff.login();
+  const profile = await liff.getProfile();
+  document.getElementById("greeting").innerText = "สวัสดีคุณ " + profile.displayName;
 });
 </script>
 
