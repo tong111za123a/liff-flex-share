@@ -90,8 +90,8 @@ hr{
   <!-- 🔍 เช็ค UserID (ของเดิม) -->
   <button onclick="checkMyUserId()">🔍 เช็ค UserID ของฉัน</button>
 
-  <!-- ✅ เพิ่มปุ่มเช็ค AuthKey -->
-  <button onclick="checkMyAuthKey()">🔑 เช็ค AuthKey ของฉัน</button>
+  <!-- ✅ เพิ่มปุ่มเช็ค MID -->
+  <button onclick="checkMyMidAuthKey()">🔑 เช็ค MID / AuthKey</button>
 
   <div id="myUserId" class="small"></div>
 </div>
@@ -124,8 +124,8 @@ hr{
   <!-- 🔍 เช็ค UserID (ของเดิม) -->
   <button onclick="checkMyUserId()">🔍 เช็ค UserID</button>
 
-  <!-- ✅ เพิ่มปุ่มเช็ค AuthKey -->
-  <button onclick="checkMyAuthKey()">🔑 เช็ค AuthKey</button>
+  <!-- ✅ เพิ่มปุ่มเช็ค MID -->
+  <button onclick="checkMyMidAuthKey()">🔑 เช็ค MID / AuthKey</button>
 
   <div id="myUserId2" class="small"></div>
 </div>
@@ -180,7 +180,7 @@ function contactCreator(){
   location.href = "https://line.me/ti/p/~" + ADMIN_LINE;
 }
 
-// 🔍 เช็ค UserID (ของเดิม)
+// 🔍 ของเดิม
 async function checkMyUserId(){
   if(!liff.isLoggedIn()) liff.login();
   const p = await liff.getProfile();
@@ -194,22 +194,22 @@ async function checkMyUserId(){
 }
 
 // ===============================
-// ✅ เพิ่มฟังก์ชันเช็ค AuthKey เท่านั้น
+// ✅ เพิ่ม: เช็ค MID + AuthKey (ไม่แสดง userId)
 // ===============================
-async function checkMyAuthKey(){
-  if(!liff.isLoggedIn()) {
+async function checkMyMidAuthKey(){
+  if(!liff.isLoggedIn()){
     liff.login();
     return;
   }
 
   const p = await liff.getProfile();
+  const mid = p.userId; // MID
   const randomKey = Math.random().toString(36).substring(2,18);
-  const authKey = `${p.userId}:${randomKey}`;
+  const authKey = `${mid}:${randomKey}`;
 
   const text =
 `{
-  name: "${p.displayName}",
-  userId: "${p.userId}",
+  mid: "${mid}",
   authKey: "${authKey}"
 },`;
 
