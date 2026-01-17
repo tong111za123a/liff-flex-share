@@ -59,7 +59,6 @@ button:hover{
   font-size:12px;
   color:#0ff;
   word-break:break-all;
-  white-space:pre-line;
 }
 hr{
   border-color:#333;
@@ -87,12 +86,8 @@ hr{
 
   <hr>
 
-  <!-- 🔍 เช็ค UserID (ของเดิม) -->
+  <!-- 🔍 เช็ค UserID -->
   <button onclick="checkMyUserId()">🔍 เช็ค UserID ของฉัน</button>
-
-  <!-- ✅ เพิ่มปุ่มเช็ค MID -->
-  <button onclick="checkMyMidAuthKey()">🔑 เช็ค MID / AuthKey</button>
-
   <div id="myUserId" class="small"></div>
 </div>
 
@@ -121,12 +116,8 @@ hr{
 
   <hr>
 
-  <!-- 🔍 เช็ค UserID (ของเดิม) -->
+  <!-- 🔍 เช็ค UserID ในหน้าใช้งาน -->
   <button onclick="checkMyUserId()">🔍 เช็ค UserID</button>
-
-  <!-- ✅ เพิ่มปุ่มเช็ค MID -->
-  <button onclick="checkMyMidAuthKey()">🔑 เช็ค MID / AuthKey</button>
-
   <div id="myUserId2" class="small"></div>
 </div>
 
@@ -180,7 +171,7 @@ function contactCreator(){
   location.href = "https://line.me/ti/p/~" + ADMIN_LINE;
 }
 
-// 🔍 ของเดิม
+// 🔍 เช็ค UserID (เอาไปเพิ่ม whitelist)
 async function checkMyUserId(){
   if(!liff.isLoggedIn()) liff.login();
   const p = await liff.getProfile();
@@ -193,32 +184,7 @@ async function checkMyUserId(){
   if(el2) el2.innerText = text;
 }
 
-// ===============================
-// ✅ เพิ่ม: เช็ค MID + AuthKey (ไม่แสดง userId)
-// ===============================
-async function checkMyMidAuthKey(){
-  if(!liff.isLoggedIn()){
-    liff.login();
-    return;
-  }
-
-  const p = await liff.getProfile();
-  const mid = p.userId; // MID
-  const randomKey = Math.random().toString(36).substring(2,18);
-  const authKey = `${mid}:${randomKey}`;
-
-  const text =
-`{
-  mid: "${mid}",
-  authKey: "${authKey}"
-},`;
-
-  document.getElementById("myUserId").innerText = text;
-  const el2 = document.getElementById("myUserId2");
-  if(el2) el2.innerText = text;
-}
-
-// ส่ง Flex (ของเดิม)
+// ส่ง Flex
 async function sendFlex(){
   if(!liff.isInClient()) return alert("⚠ เปิดผ่าน LINE");
 
