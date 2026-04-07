@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>😍🖤➣ໂのနတՃั่Ձ¹✯🖤😍</title>
+<title>😍🖤➣ໂのနตՃั่Ձ¹✯🖤😍</title>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
@@ -88,6 +88,9 @@ hr{
   <input id="genInput" placeholder="URLรูปภาพ ไอดีไลน์">
 
   <button onclick="sendFlex()">แชร์ Flex</button>
+  
+  <button onclick="sendFlexVdo()" style="border-color:#ffff00;color:#ffff00">แชร์ Flex VDO (Giga)</button>
+
   <button onclick="window.location.href='https://pic.in.th/?lang=th'"
     style="border-color:#ff00ff;color:#ff00ff">
     ฝากรูปภาพ
@@ -193,6 +196,188 @@ async function sendFlex(){
     await liff.shareTargetPicker([flexMsg]);
   } catch (error) {
     console.error("Error sending flex:", error);
+  }
+}
+
+// ฟังก์ชันสำหรับแชร์ Flex VDO ที่คุณส่งมา
+async function sendFlexVdo() {
+  if(!liff.isInClient()) return alert("⚠ กรุณาเปิดผ่านแอป LINE เท่านั้น");
+
+  const flexVdoMsg = {
+    "type": "flex",
+    "altText": "สนใจโพสงาน VDO id: mc357.com",
+    "contents": {
+      "type": "bubble",
+      "size": "giga",
+      "header": {
+        "type": "box",
+        "layout": "horizontal",
+        "paddingTop": "15px",
+        "paddingBottom": "15px",
+        "backgroundColor": "#FFFFFF",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "flex": 0,
+            "paddingStart": "5px",
+            "contents": [
+              {
+                "type": "text",
+                "text": "รับโพส VDO id: mc357.com"
+              }
+            ],
+            "position": "absolute",
+            "paddingAll": "lg"
+          },
+          {
+            "type": "filler"
+          },
+          {
+            "type": "separator",
+            "color": "#dadada"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "width": "110px",
+            "paddingStart": "10px",
+            "action": {
+              "type": "uri",
+              "label": "share",
+              "uri": "http://line.me/ti/p/~mc357.com"
+            },
+            "contents": [
+              {
+                "type": "image",
+                "url": "https://img1.pic.in.th/images/1000126089.png",
+                "size": "20px",
+                "aspectRatio": "37:38",
+                "flex": 0
+              },
+              {
+                "type": "text",
+                "text": "คลิกติดต่อโพสงาน",
+                "color": "#07B53B",
+                "size": "md",
+                "offsetStart": "5px",
+                "gravity": "center",
+                "wrap": true,
+                "action": {
+                  "type": "uri",
+                  "label": "action",
+                  "uri": "http://line.me/ti/p/~mc357.com"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "hero": {
+        "type": "video",
+        "url": "https://www.dropbox.com/scl/fi/pqkeshze73de4nsqamta2/796994586.241002.mp4?rlkey=1f634drignvha274nsbz4l827&st=1cgftq4f&raw=1",
+        "previewUrl": "https://www.dropbox.com/scl/fi/xp1gika10g9usrysaijjn/IMG_3274.jpeg?rlkey=wgijmc594bjqdzihbm88v4u44&st=cunew1y5&raw=1",
+        "altContent": {
+          "type": "image",
+          "size": "full",
+          "aspectRatio": "16:9",
+          "aspectMode": "cover",
+          "url": "https://www.dropbox.com/scl/fi/xp1gika10g9usrysaijjn/IMG_3274.jpeg?rlkey=wgijmc594bjqdzihbm88v4u44&st=cunew1y5&raw=1"
+        },
+        "aspectRatio": "16:9"
+      },
+      "body": {
+        "type": "box",
+        "layout": "vertical",
+        "paddingAll": "0px",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "vertical",
+            "backgroundColor": "#ffffff",
+            "contents": [
+              {
+                "type": "box",
+                "layout": "horizontal",
+                "paddingTop": "10px",
+                "paddingBottom": "10px",
+                "paddingStart": "15px",
+                "spacing": "lg",
+                "action": {
+                  "type": "uri",
+                  "uri": "http://line.me/ti/p/~mc357.com"
+                },
+                "contents": [
+                  {
+                    "type": "box",
+                    "layout": "vertical",
+                    "flex": 2,
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "- รับโพสงาน FLEX VDO 30 วินาที\n- รับโพสรูป FLEX\n- รับโพสข้อความ\n- รับแชร์โพส\n- ขายลิ้งค์กลุ่มงาน\n- รับดึงกลุ่ม ขั้นต่ำ 50 กลุ่ม\n- ปล่อยเช่าระบบโพสงาน ทุกชนิด\n- ขายแฟ้มโพสงาน\n- ปล่อยเช่า SERVER VPS\n- รับแก้ไขโค๊ด PYTHON เพิ่มลูกเล่น\n- ขาย TOKEN\n- ขายแอพไลน์ แชร์ไม่จำกัด\n***สนใจทักสอบถามได้เลยครับ***\n>>>> LINE ID: mc357.com",
+                        "color": "#353535",
+                        "weight": "bold",
+                        "size": "sm",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "box",
+                    "layout": "vertical",
+                    "flex": 1,
+                    "offsetTop": "10px",
+                    "contents": [
+                      {
+                        "type": "image",
+                        "url": "https://img2.pic.in.th/S__32694277.jpg",
+                        "size": "full"
+                      },
+                      {
+                        "type": "text",
+                        "text": "ติดต่องานในคลิป \n คลิกที่คิวอาโค๊ด",
+                        "size": "sm",
+                        "weight": "bold",
+                        "wrap": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "separator",
+                "color": "#d1d1d1"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "paddingAll": "10px",
+            "contents": [
+              {
+                "type": "button",
+                "action": {
+                  "type": "uri",
+                  "label": "📲 คลิกติดต่อสอบถาม / จ้างงาน",
+                  "uri": "http://line.me/ti/p/~mc357.com"
+                },
+                "style": "primary",
+                "color": "#07B53B",
+                "height": "sm"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  };
+
+  try {
+    await liff.shareTargetPicker([flexVdoMsg]);
+  } catch (error) {
+    console.error("Error sending flex vdo:", error);
   }
 }
 </script>
